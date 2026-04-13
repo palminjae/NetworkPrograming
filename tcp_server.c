@@ -1,95 +1,91 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
-#include <sys/time.h>
+#include <string.h> 
+#include <stdlib.h> 
+#include <unistd.h> 
+#include <arpa/inet.h> // 소켓 주소, htons 네트워크 함수
+#include <sys/socket.h> // socket,bind,listen,accept
+#include <sys/time.h> // gettimeofday 시간 측정
 
 #define PORT 5375
-#define BUFFER_SIZE 4096
+#define BUFSIZE 4096
 
 int main() {
-    int server_fd, client_fd;
-    struct sockaddr_in server_addr, client_addr;
+    int server_fd;
+    struct sockaddr_in server_addr;
+    int client_fd;
+    struct sockaddr_in client_addr;
     socklen_t client_len = sizeof(client_addr);
-    char buffer[BUFFER_SIZE];
-    
-    // 소켓 생성
-    server_fd = socket(AF_INET, SOCK_STREAM, 0);
-    if (server_fd < 0) {
-        perror("socket");
+    char buff[BUFSIZE];
+
+    server_fd = socket(AF_INET, SOCK_STREAM, 0 ); // af_inet -> IPv4 주소사용, sock_stream -> TCP사용, 0 -> 프로토콜 자동 선택
+    if (server_fd <0) { // 실패시 음수 값 반환
+        printf("socket 생성 실패");
         exit(1);
     }
 
-    // SO_REUSEADDR 설정
-    int opt = 1;
-    setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    memset(&server_addr, 0, sizeof(server_addr)); // 구조체 0으로 초기화
+    server_addr.sin_family = AF_INET;             // IPv4 사용
+    server_addr.sin_addr.s_addr = INADDR_ANY;     // 모든 IP에서 접속 허용
+    server_addr.sin_port = htons(PORT);           // 포트 번호 설정
 
-    // 주소 설정
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(PORT);
-
-    // 바인드
+    // 소켓에 주소 연결
     if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
-        perror("bind");
+        printf("bind 실패");
         exit(1);
     }
 
-    // 리슨
-    if (listen(server_fd, 1) < 0) {
-        perror("listen");
+    // 연결 대기
+    if (listen(server_fd, 1) < 0) { // 인원수는 한명
+        printf("listen 실패\n");
         exit(1);
     }
+    printf("서버 시작, 포트 %d에서 대기 중...\n", PORT);
 
-    printf("[TCP Server] Listening on port %d...\n", PORT);
-
-    // 클라이언트 연결 수락
+    // 클라이언트 수락
     client_fd = accept(server_fd, (struct sockaddr*)&client_addr, &client_len);
     if (client_fd < 0) {
-        perror("accept");
+        printf("accept 실패\n");
         exit(1);
     }
-    printf("[TCP Server] Client connected: %s\n", inet_ntoa(client_addr.sin_addr));
+    printf("클라이언트 연결됨: %s\n", inet_ntoa(client_addr.sin_addr));
 
     // 데이터 수신 및 throughput 측정
     long long total_bytes = 0;
     int bytes_received;
     struct timeval start, now;
-    gettimeofday(&start, NULL);
+    gettimeofday(&start, NULL);  // 시작 시간 기록
 
-    while ((bytes_received = recv(client_fd, buffer, BUFFER_SIZE, 0)) > 0) {
+    while ((bytes_received = recv(client_fd, buff, BUFSIZE, 0)) > 0) {
         total_bytes += bytes_received;
 
+        // 현재 시간 측정
         gettimeofday(&now, NULL);
-        double elapsed = (now.tv_sec - start.tv_sec) + (now.tv_usec - start.tv_usec) / 1e6;
+        double elapsed = (now.tv_sec - start.tv_sec) + 
+                         (now.tv_usec - start.tv_usec) / 1e6;
 
+        // throughput 출력
         if (elapsed > 0) {
             double throughput = (total_bytes * 8.0) / elapsed; // bps
-            printf("[TCP Server] Received: %lld bytes | Elapsed: %.2fs | Throughput: %.2f bps (%.2f Bps)\n",
-                   total_bytes, elapsed, throughput, throughput / 8.0);
+            printf("수신: %lld bytes | 경과: %.2f초 | throughput: %.2f bps\n",
+                   total_bytes, elapsed, throughput);
         }
-        // 수신 후 데이터 삭제 (버퍼 재사용)
-        memset(buffer, 0, BUFFER_SIZE);
+
+        memset(buff, 0, BUFSIZE);  // 버퍼 초기화 (데이터 삭제)
     }
 
-    if (bytes_received == 0) {
-        printf("[TCP Server] Client disconnected.\n");
-    } else {
-        perror("recv");
-    }
+    printf("클라이언트 연결 종료\n");
 
+    // 최종 결과 출력
     gettimeofday(&now, NULL);
-    double total_elapsed = (now.tv_sec - start.tv_sec) + (now.tv_usec - start.tv_usec) / 1e6;
-    printf("[TCP Server] === Final Result ===\n");
-    printf("[TCP Server] Total bytes received: %lld\n", total_bytes);
-    printf("[TCP Server] Total time: %.2f s\n", total_elapsed);
+    double total_elapsed = (now.tv_sec - start.tv_sec) + 
+                           (now.tv_usec - start.tv_usec) / 1e6;
+    printf("=== 최종 결과 ===\n");
+    printf("총 수신 bytes: %lld\n", total_bytes);
+    printf("총 시간: %.2f초\n", total_elapsed);
     if (total_elapsed > 0)
-        printf("[TCP Server] Average throughput: %.2f bps (%.2f Bps)\n",
-               (total_bytes * 8.0) / total_elapsed, total_bytes / total_elapsed);
+        printf("평균 throughput: %.2f bps\n", (total_bytes * 8.0) / total_elapsed);
 
+    // 소켓 닫기
     close(client_fd);
     close(server_fd);
     return 0;
