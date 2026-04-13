@@ -6,7 +6,7 @@
 #include <sys/socket.h>
 #include <time.h>
 
-#define PORT 5375
+#define PORT 5376
 #define SERVER_IP "127.0.0.1"
 #define BUFSIZE 4096
 #define DURATION 60
@@ -29,7 +29,7 @@ int main(int argc, char *argv[]) {
     char buff[BUFSIZE];
     memset(buff, 'A', BUFSIZE);
 
-    skfd = socket(AF_INET, SOCK_STREAM, 0);
+    skfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (skfd < 0) {
         printf("socket 생성 실패\n");
         exit(1);
@@ -40,16 +40,10 @@ int main(int argc, char *argv[]) {
     srvaddr.sin_addr.s_addr = inet_addr(SERVER_IP);
     srvaddr.sin_port = htons(PORT);
 
-    if (connect(skfd, (struct sockaddr*)&srvaddr, sizeof(srvaddr)) < 0) {
-        printf("connect 실패\n");
-        exit(1);
-    }
-    printf("서버 연결 완료! 전송속도: %d bytes/s, 지속시간: %d초\n",
-           sendrate, DURATION);
+    printf("UDP 전송 시작! 전송속도: %d bytes/s, 지속시간: %d초\n", sendrate, DURATION);
 
     long long totalsent = 0;
     struct timespec start, now, loopstart, loopend;
-    long elapsedns;
 
     clock_gettime(CLOCK_MONOTONIC, &start);
 
@@ -59,18 +53,19 @@ int main(int argc, char *argv[]) {
         int remaining = sendrate;
         while (remaining > 0) {
             int chunk = (remaining < BUFSIZE) ? remaining : BUFSIZE;
-            int bytes_sent = send(skfd, buff, chunk, 0);
+            int bytes_sent = sendto(skfd, buff, chunk, 0,
+                                    (struct sockaddr*)&srvaddr, sizeof(srvaddr));
             if (bytes_sent < 0) {
-                printf("send 실패 (sec=%d)\n", sec);
+                printf("sendto 실패 (sec=%d)\n", sec);
                 goto done;
             }
             totalsent += bytes_sent;
-            remaining  -= bytes_sent;
+            remaining -= bytes_sent;
         }
 
         clock_gettime(CLOCK_MONOTONIC, &loopend);
-        elapsedns = (loopend.tv_sec  - loopstart.tv_sec)  * 1000000000LL
-                   + (loopend.tv_nsec - loopstart.tv_nsec);
+        long elapsedns = (loopend.tv_sec  - loopstart.tv_sec)  * 1000000000LL
+                       + (loopend.tv_nsec - loopstart.tv_nsec);
         long sleepns = 1000000000LL - elapsedns;
         if (sleepns > 0) {
             struct timespec ts = { .tv_sec = 0, .tv_nsec = sleepns };
@@ -86,7 +81,7 @@ done:
                    + (now.tv_nsec - start.tv_nsec) / 1e9;
     double tputkBps = totalsent / elapsed / 1000.0;
 
-    printf("\n===== TCP 전송 결과 =====\n");
+    printf("\n===== UDP 전송 결과 =====\n");
     printf("전송속도 설정   : %d bytes/s\n", sendrate);
     printf("총 전송 바이트  : %lld bytes\n", totalsent);
     printf("경과 시간        : %.3f 초\n", elapsed);
