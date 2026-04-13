@@ -9,25 +9,25 @@
 #define BUFSIZE 4096
 
 int main() {
-    int server_fd;
-    struct sockaddr_in server_addr;
-    struct sockaddr_in client_addr;
-    socklen_t client_len = sizeof(client_addr);
+    int server_socket_file_descriptor;
+    struct sockaddr_in server_address_info;
+    struct sockaddr_in client_address_info;
+    socklen_t client_address_length = sizeof(client_address_info);
     char buff[BUFSIZE];
 
-    server_fd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (server_fd < 0) {
+    server_socket_file_descriptor = socket(AF_INET, SOCK_DGRAM, 0);
+    if (server_socket_file_descriptor < 0) {
         printf("socket 생성 실패\n");
         exit(1);
     }
     // 서버 주소 설정
-    memset(&server_addr, 0, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = INADDR_ANY;
-    server_addr.sin_port = htons(PORT);
+    memset(&server_address_info, 0, sizeof(server_address_info));
+    server_address_info.sin_family = AF_INET;
+    server_address_info.sin_addr.s_addr = INADDR_ANY;
+    server_address_info.sin_port = htons(PORT);
 
     // bind (TCP랑 똑같아요)
-    if (bind(server_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+    if (bind(server_socket_file_descriptor, (struct sockaddr*)&server_address_info, sizeof(server_address_info)) < 0) {
         printf("bind 실패\n");
         exit(1);
     }
@@ -35,14 +35,14 @@ int main() {
 
     // 데이터 수신 (recvfrom = UDP 전용 recv)
     int bytes_received;
-    while ((bytes_received = recvfrom(server_fd, buff, BUFSIZE, 0,
-                            (struct sockaddr*)&client_addr, &client_len)) > 0) {
+    while ((bytes_received = recvfrom(server_socket_file_descriptor, buff, BUFSIZE, 0,
+                            (struct sockaddr*)&client_address_info, &client_address_length)) > 0) {
         printf("수신: %d bytes | 클라이언트: %s\n",
-               bytes_received, inet_ntoa(client_addr.sin_addr));
+               bytes_received, inet_ntoa(client_address_info.sin_addr));
         memset(buff, 0, BUFSIZE);
     }
 
     printf("수신 종료\n");
-    close(server_fd);
+    close(server_socket_file_descriptor);
     return 0;
 }
