@@ -29,22 +29,10 @@ int main() {
     server_addr.sin_addr.s_addr = inet_addr(SERVER_IP);
     server_addr.sin_port = htons(PORT);
 
-    int total_sent = 0;
-    for (int i = 0; i < 10; i++) {
-        int bytes_sent = sendto(sock_fd, buff, BUFSIZE, 0,
-                        (struct sockaddr*)&server_addr, sizeof(server_addr));
-        if (bytes_sent < 0) {
-            printf("sendto 실패\n");
-            break;
-        }
-        total_sent += bytes_sent;
-        printf("전송: %d bytes | 총 전송: %d bytes\n", bytes_sent, total_sent);
-        sleep(1);
-    }
-
-    printf("전송 완료! 총 %d bytes 전송\n", total_sent);
-
+    // 데이터 전송 (10번 반복)
+    sendto(sock_fd, buff, BUFSIZE, 0,
+       (struct sockaddr*)&server_addr, sizeof(server_addr));
+    printf("전송 완료!\n");
     close(sock_fd);
-
     return 0;
 }

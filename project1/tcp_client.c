@@ -38,20 +38,13 @@ int main() {
     printf("서버 연결 완료!\n");
 
     // 데이터 전송 (10번 반복)
-    int total_sent = 0;
-    for (int i = 0; i < 10; i++) {
-        int bytes_sent = send(sock_fd, buff, BUFSIZE, 0);
-        if (bytes_sent < 0) {
-            printf("send 실패\n");
-            break;
-        }
-        total_sent += bytes_sent;
-        printf("전송: %d bytes | 총 전송: %d bytes\n", bytes_sent, total_sent);
-        sleep(1); // 1초 대기
+    int bytes_sent = send(sock_fd, buff, BUFSIZE, 0);
+    if (bytes_sent < 0) {
+        printf("send 실패\n");
+    }  
+    else {
+        printf("전송 완료! %d bytes 전송\n", bytes_sent);
     }
-
-    printf("전송 완료! 총 %d bytes 전송\n", total_sent);
-
     // 소켓 닫기
     close(sock_fd);
     return 0;
