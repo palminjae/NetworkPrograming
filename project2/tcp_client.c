@@ -49,7 +49,6 @@ int main(int argc, char *argv[]) {
 
     long long totalsent = 0;
     struct timespec start, now, loopstart, loopend;
-    long elapsedns;
 
     clock_gettime(CLOCK_MONOTONIC, &start);
 
@@ -69,8 +68,8 @@ int main(int argc, char *argv[]) {
         }
 
         clock_gettime(CLOCK_MONOTONIC, &loopend);
-        elapsedns = (loopend.tv_sec  - loopstart.tv_sec)  * 1000000000LL
-                   + (loopend.tv_nsec - loopstart.tv_nsec);
+        long elapsedns = (loopend.tv_sec  - loopstart.tv_sec)  * 1000000000LL
+                       + (loopend.tv_nsec - loopstart.tv_nsec);
         long sleepns = 1000000000LL - elapsedns;
         if (sleepns > 0) {
             struct timespec ts = { .tv_sec = 0, .tv_nsec = sleepns };
@@ -84,14 +83,15 @@ done:
     clock_gettime(CLOCK_MONOTONIC, &now);
     double elapsed = (now.tv_sec  - start.tv_sec)
                    + (now.tv_nsec - start.tv_nsec) / 1e9;
-    double tputkBps = totalsent / elapsed / 1000.0;
+    double tputBps  = totalsent / elapsed;
+    double tputkBps = tputBps / 1000.0;
 
-    printf("\n===== TCP 전송 결과 =====\n");
-    printf("전송속도 설정   : %d bytes/s\n", sendrate);
+    printf("\n===== TCP 전송 결과 (클라이언트 기준) =====\n");
+    printf("전송속도 설정   : %d Bytes/s\n", sendrate);
     printf("총 전송 바이트  : %lld bytes\n", totalsent);
     printf("경과 시간        : %.3f 초\n", elapsed);
-    printf("Throughput (TX)  : %.2f kbps\n", tputkBps);
-    printf("=========================\n");
+    printf("Throughput (TX)  : %.2f Bytes/s (%.2f kBytes/s)\n", tputBps, tputkBps);
+    printf("===========================================\n");
 
     close(skfd);
     return 0;

@@ -51,27 +51,33 @@ int main() {
 
     long long totalbytes = 0;
     int bytes_received;
-
-    struct timespec start, end;
+    struct timespec start, now;
     clock_gettime(CLOCK_MONOTONIC, &start);
 
     while ((bytes_received = recv(clifd, buff, BUFSIZE, 0)) > 0) {
         totalbytes += bytes_received;
+
+        clock_gettime(CLOCK_MONOTONIC, &now);
+        double elapsed = (now.tv_sec - start.tv_sec)
+                       + (now.tv_nsec - start.tv_nsec) / 1e9;
+
+        printf("[%.2f초] 수신: %d bytes | 누적: %lld bytes\n",
+               elapsed, bytes_received, totalbytes);
+
         memset(buff, 0, BUFSIZE);
     }
 
-    clock_gettime(CLOCK_MONOTONIC, &end);
-
-    double elapsed = (end.tv_sec - start.tv_sec)
-                   + (end.tv_nsec - start.tv_nsec) / 1e9;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    double elapsed = (now.tv_sec - start.tv_sec)
+                   + (now.tv_nsec - start.tv_nsec) / 1e9;
     double tputBps  = totalbytes / elapsed;
     double tputkBps = tputBps / 1000.0;
 
-    printf("\n===== TCP Throughput 측정 결과 =====\n");
-    printf("총 수신 바이트 : %lld bytes\n", totalbytes);
-    printf("경과 시간       : %.3f 초\n", elapsed);
-    printf("Throughput      : %.2f bps (%.2f kbps)\n", tputBps, tputkBps);
-    printf("====================================\n");
+    printf("\n===== TCP Throughput 측정 결과 (서버 기준) =====\n");
+    printf("총 수신 바이트  : %lld bytes\n", totalbytes);
+    printf("경과 시간        : %.3f 초\n", elapsed);
+    printf("Throughput (RX)  : %.2f Bytes/s (%.2f kBytes/s)\n", tputBps, tputkBps);
+    printf("================================================\n");
 
     close(clifd);
     close(srvfd);
