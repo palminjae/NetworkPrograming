@@ -6,10 +6,10 @@
 #include <sys/socket.h>
 #include <time.h>
 
-#define PORT 5376
+#define PORT 4732
 #define SERVER_IP "127.0.0.1"
 #define BUFSIZE 4096
-#define DURATION 60
+#define DURATION 100
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -76,6 +76,10 @@ int main(int argc, char *argv[]) {
     }
 
 done:
+    // 전송 종료 신호
+    sendto(skfd, "END", 3, 0, (struct sockaddr*)&srvaddr, sizeof(srvaddr));
+    printf("종료 신호 전송 완료\n");
+
     clock_gettime(CLOCK_MONOTONIC, &now);
     double elapsed = (now.tv_sec  - start.tv_sec)
                    + (now.tv_nsec - start.tv_nsec) / 1e9;

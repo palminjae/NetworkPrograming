@@ -9,7 +9,7 @@
 #define PORT 5375
 #define SERVER_IP "127.0.0.1"
 #define BUFSIZE 4096
-#define DURATION 60
+#define DURATION 100
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -83,14 +83,14 @@ done:
     clock_gettime(CLOCK_MONOTONIC, &now);
     double elapsed = (now.tv_sec  - start.tv_sec)
                    + (now.tv_nsec - start.tv_nsec) / 1e9;
-    double tputBps  = totalsent / elapsed;
-    double tputkBps = tputBps / 1000.0;
+    double tput = totalsent / elapsed;
 
     printf("\n===== TCP 전송 결과 (클라이언트 기준) =====\n");
-    printf("전송속도 설정   : %d Bytes/s\n", sendrate);
+    printf("전송속도 설정   : %d bytes/s\n", sendrate);
     printf("총 전송 바이트  : %lld bytes\n", totalsent);
     printf("경과 시간        : %.3f 초\n", elapsed);
-    printf("Throughput (TX)  : %.2f Bytes/s (%.2f kBytes/s)\n", tputBps, tputkBps);
+    printf("Throughput (TX)  : %.2f bytes/s\n", tput);
+    printf("※ 실제 Throughput은 서버 수신 기준을 참고하세요.\n");
     printf("===========================================\n");
 
     close(skfd);
