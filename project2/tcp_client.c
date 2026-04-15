@@ -12,7 +12,7 @@
 #define DURATION 100
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
+    if (argc < 2) { // 전송속도 -> 인자로 받도록 
         printf("사용법: %s <전송속도(bytes/s)>\n", argv[0]);
         printf("예시  : %s 500\n", argv[0]);
         exit(1);
@@ -52,6 +52,7 @@ int main(int argc, char *argv[]) {
 
     clock_gettime(CLOCK_MONOTONIC, &start);
 
+    // sendrate에 맞춰서 1초마다 전송하게끔, duraition 동안 반복
     for (int sec = 0; sec < DURATION; sec++) {
         clock_gettime(CLOCK_MONOTONIC, &loopstart);
 
@@ -67,7 +68,7 @@ int main(int argc, char *argv[]) {
             remaining  -= bytes_sent;
         }
 
-        clock_gettime(CLOCK_MONOTONIC, &loopend);
+        clock_gettime(CLOCK_MONOTONIC, &loopend); // nanosleep으로 1초 맞추기
         long elapsedns = (loopend.tv_sec  - loopstart.tv_sec)  * 1000000000LL
                        + (loopend.tv_nsec - loopstart.tv_nsec);
         long sleepns = 1000000000LL - elapsedns;

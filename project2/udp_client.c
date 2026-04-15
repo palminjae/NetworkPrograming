@@ -12,7 +12,7 @@
 #define DURATION 100
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) {
+    if (argc < 2) { // 이거도 전송속도 -> 인자로 받도록
         printf("사용법: %s <전송속도(bytes/s)>\n", argv[0]);
         printf("예시  : %s 500\n", argv[0]);
         exit(1);
@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
 
     clock_gettime(CLOCK_MONOTONIC, &start);
 
-    for (int sec = 0; sec < DURATION; sec++) {
+    for (int sec = 0; sec < DURATION; sec++) { // duration 동안 반복
         clock_gettime(CLOCK_MONOTONIC, &loopstart);
 
         int remaining = sendrate;
@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
             remaining -= bytes_sent;
         }
 
-        clock_gettime(CLOCK_MONOTONIC, &loopend);
+        clock_gettime(CLOCK_MONOTONIC, &loopend); // 1초에 맞춰 nanosleep으로 속도 제어
         long elapsedns = (loopend.tv_sec  - loopstart.tv_sec)  * 1000000000LL
                        + (loopend.tv_nsec - loopstart.tv_nsec);
         long sleepns = 1000000000LL - elapsedns;
@@ -75,8 +75,7 @@ int main(int argc, char *argv[]) {
         printf("[%2d초] 누적 전송: %lld bytes\n", sec + 1, totalsent);
     }
 
-    // 전송 종료 신호
-    sendto(skfd, "END", 3, 0, (struct sockaddr*)&srvaddr, sizeof(srvaddr));
+    sendto(skfd, "END", 3, 0, (struct sockaddr*)&srvaddr, sizeof(srvaddr)); // udp는 연결이 없으므로 sendto로 종료 신호 전송
     printf("종료 신호 전송 완료\n");
 
     clock_gettime(CLOCK_MONOTONIC, &now);

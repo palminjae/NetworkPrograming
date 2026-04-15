@@ -23,9 +23,6 @@ int main() {
         exit(1);
     }
 
-    int opt = 1;
-    setsockopt(srvfd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-
     memset(&srvaddr, 0, sizeof(srvaddr));
     srvaddr.sin_family = AF_INET;
     srvaddr.sin_addr.s_addr = INADDR_ANY;
@@ -52,7 +49,7 @@ int main() {
     long long totalbytes = 0;
     int bytes_received;
     struct timespec start, now;
-    clock_gettime(CLOCK_MONOTONIC, &start);
+    clock_gettime(CLOCK_MONOTONIC, &start); // 첫 수신을 기점으로 시간 측정을 시작
 
     while ((bytes_received = recv(clifd, buff, BUFSIZE, 0)) > 0) {
         totalbytes += bytes_received;
@@ -67,7 +64,7 @@ int main() {
         memset(buff, 0, BUFSIZE);
     }
 
-    clock_gettime(CLOCK_MONOTONIC, &now);
+    clock_gettime(CLOCK_MONOTONIC, &now);// 쓰루풋 계산 &출력
     double elapsed = (now.tv_sec - start.tv_sec)
                    + (now.tv_nsec - start.tv_nsec) / 1e9;
     double tputBps  = totalbytes / elapsed;
