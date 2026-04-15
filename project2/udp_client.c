@@ -9,7 +9,7 @@
 #define PORT 4732
 #define SERVER_IP "127.0.0.1"
 #define BUFSIZE 4096
-#define DURATION 10
+#define DURATION 100
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
