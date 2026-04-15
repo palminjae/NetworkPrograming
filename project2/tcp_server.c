@@ -19,7 +19,7 @@ int main() {
 
     srvfd = socket(AF_INET, SOCK_STREAM, 0);
     if (srvfd < 0) {
-        printf("socket 생성 실패\n");
+        printf("소켓 생성 실패\n");
         exit(1);
     }
 
@@ -29,19 +29,19 @@ int main() {
     srvaddr.sin_port = htons(PORT);
 
     if (bind(srvfd, (struct sockaddr*)&srvaddr, sizeof(srvaddr)) < 0) {
-        printf("bind 실패\n");
+        printf("할당 실패\n");
         exit(1);
     }
 
     if (listen(srvfd, 1) < 0) {
-        printf("listen 실패\n");
+        printf("읽기 실패\n");
         exit(1);
     }
     printf("TCP 서버 시작, 포트 %d에서 대기 중...\n", PORT);
 
     clifd = accept(srvfd, (struct sockaddr*)&cliaddr, &clilen);
     if (clifd < 0) {
-        printf("accept 실패\n");
+        printf("받기 실패\n");
         exit(1);
     }
     printf("클라이언트 연결됨: %s\n", inet_ntoa(cliaddr.sin_addr));
@@ -74,7 +74,6 @@ int main() {
     printf("총 수신 바이트  : %lld bytes\n", totalbytes);
     printf("경과 시간        : %.3f 초\n", elapsed);
     printf("Throughput (RX)  : %.2f Bytes/s (%.2f kBytes/s)\n", tputBps, tputkBps);
-    printf("================================================\n");
 
     close(clifd);
     close(srvfd);

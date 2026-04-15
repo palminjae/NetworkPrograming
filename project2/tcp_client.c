@@ -31,7 +31,7 @@ int main(int argc, char *argv[]) {
 
     skfd = socket(AF_INET, SOCK_STREAM, 0);
     if (skfd < 0) {
-        printf("socket 생성 실패\n");
+        printf("소켓 생성 실패\n");
         exit(1);
     }
 
@@ -41,10 +41,10 @@ int main(int argc, char *argv[]) {
     srvaddr.sin_port = htons(PORT);
 
     if (connect(skfd, (struct sockaddr*)&srvaddr, sizeof(srvaddr)) < 0) {
-        printf("connect 실패\n");
+        printf("연결 실패\n");
         exit(1);
     }
-    printf("서버 연결 완료! 전송속도: %d bytes/s, 지속시간: %d초\n",
+    printf("연결성공 전송속도: %d bytes/s, 지속시간: %d초\n",
            sendrate, DURATION);
 
     long long totalsent = 0;
@@ -61,7 +61,7 @@ int main(int argc, char *argv[]) {
             int chunk = (remaining < BUFSIZE) ? remaining : BUFSIZE;
             int bytes_sent = send(skfd, buff, chunk, 0);
             if (bytes_sent < 0) {
-                printf("send 실패 (sec=%d)\n", sec);
+                printf("전송 실패 (sec=%d)\n", sec);
                 goto done;
             }
             totalsent += bytes_sent;
@@ -91,8 +91,6 @@ done:
     printf("총 전송 바이트  : %lld bytes\n", totalsent);
     printf("경과 시간        : %.3f 초\n", elapsed);
     printf("Throughput (TX)  : %.2f bytes/s\n", tput);
-    printf("※ 실제 Throughput은 서버 수신 기준을 참고하세요.\n");
-    printf("===========================================\n");
 
     close(skfd);
     return 0;

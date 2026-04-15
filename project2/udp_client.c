@@ -89,8 +89,6 @@ int main(int argc, char *argv[]) {
     printf("총 전송 바이트  : %lld bytes\n", totalsent);
     printf("경과 시간        : %.3f 초\n", elapsed);
     printf("Throughput (TX)  : %.2f Bytes/s (%.2f kBytes/s)\n", tputBps, tputkBps);
-    printf("===========================================\n");
-
     close(skfd);
     return 0;
 }
