@@ -90,8 +90,8 @@ int main() {
 
         printf("\n===== UDP Throughput 측정 결과 (서버 기준) =====\n");
         printf("총 수신 바이트  : %lld bytes\n", totalbytes);
-        printf("경과 시간        : %.3f 초\n", elapsed);
-        printf("Throughput (RX)  : %.2f Bytes/s (%.2f kBytes/s)\n", tputBps, tputkBps);
+        printf("경과 시간        : %.8f 초\n", elapsed);
+        printf("Throughput (RX)  : %.8f Bytes/s (%.2f kBytes/s)\n", tputBps, tputkBps);
         printf("================================================\n");
     }
 
