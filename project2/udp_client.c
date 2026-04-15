@@ -9,7 +9,7 @@
 #define PORT 4732
 #define SERVER_IP "127.0.0.1"
 #define BUFSIZE 4096
-#define DURATION 100
+#define DURATION 10
 
 int main(int argc, char *argv[]) {
     if (argc < 2) {
@@ -57,7 +57,7 @@ int main(int argc, char *argv[]) {
                                     (struct sockaddr*)&srvaddr, sizeof(srvaddr));
             if (bytes_sent < 0) {
                 printf("sendto 실패 (sec=%d)\n", sec);
-                goto done;
+                break;
             }
             totalsent += bytes_sent;
             remaining -= bytes_sent;
@@ -75,7 +75,6 @@ int main(int argc, char *argv[]) {
         printf("[%2d초] 누적 전송: %lld bytes\n", sec + 1, totalsent);
     }
 
-done:
     // 전송 종료 신호
     sendto(skfd, "END", 3, 0, (struct sockaddr*)&srvaddr, sizeof(srvaddr));
     printf("종료 신호 전송 완료\n");

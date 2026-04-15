@@ -10,3 +10,13 @@ tc qdisc show dev eth0
 
 # 초기화
 sudo tc qdisc del dev eth0 root
+
+# 연구실 
+# [설정] RTT 100ms + loss 1%
+sudo tc qdisc add dev lo root netem delay 50ms loss 1%
+
+# 설정 확인
+tc qdisc show dev lo
+
+# 초기화
+sudo tc qdisc del dev lo root

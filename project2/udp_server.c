@@ -65,7 +65,7 @@ int main() {
 
         // 종료 신호 확인 (totalbytes에 더하기 전에 체크)
         if (bytes_received == 3 && strncmp(buff, "END", 3) == 0) {
-            clock_gettime(CLOCK_MONOTONIC, &end);
+            clock_gettime(CLOCK_MONOTONIC, &end); 
             printf("종료 신호 수신 → 전송 종료\n");
             break;
         }
