@@ -12,15 +12,13 @@
 #define DURATION 100
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) { // 이거도 전송속도 -> 인자로 받도록
-        printf("사용법: %s <전송속도(bytes/s)>\n", argv[0]);
-        printf("예시  : %s 500\n", argv[0]);
+    if (argc < 2) {// 이거도 전송속도 -> 인자로 받도록
         exit(1);
     }
 
     int sendrate = atoi(argv[1]);
+    
     if (sendrate <= 0) {
-        printf("전송속도는 양수여야 합니다.\n");
         exit(1);
     }
 

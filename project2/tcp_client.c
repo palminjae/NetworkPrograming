@@ -12,18 +12,16 @@
 #define DURATION 100
 
 int main(int argc, char *argv[]) {
-    if (argc < 2) { // 전송속도 -> 인자로 받도록 
-        printf("사용법: %s <전송속도(bytes/s)>\n", argv[0]);
-        printf("예시  : %s 500\n", argv[0]);
+    if (argc < 2) { 
         exit(1);
     }
-
+    
     int sendrate = atoi(argv[1]);
+    
     if (sendrate <= 0) {
-        printf("전송속도는 양수여야 합니다.\n");
         exit(1);
     }
-
+    
     int skfd;
     struct sockaddr_in srvaddr;
     char buff[BUFSIZE];
@@ -62,7 +60,7 @@ int main(int argc, char *argv[]) {
             int sent = send(skfd, buff, chunk, 0);
             if (sent < 0) {
                 printf("전송 실패 (sec=%d)\n", sec);
-                goto done;
+                break;
             }
             total += sent;
             remaining  -= sent;
@@ -80,7 +78,6 @@ int main(int argc, char *argv[]) {
         printf("[%2d초] 누적 전송: %lld bytes\n", sec + 1, total);
     }
 
-done:
     clock_gettime(CLOCK_MONOTONIC, &now);
     double elapsed = (now.tv_sec  - start.tv_sec)
                    + (now.tv_nsec - start.tv_nsec) / 1e9;
