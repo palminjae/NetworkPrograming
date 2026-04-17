@@ -18,7 +18,6 @@ int main() {
 
     srvfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (srvfd < 0) {
-        printf("소켓 생성 실패\n");
         exit(1);
     }
 
@@ -28,7 +27,6 @@ int main() {
     srvaddr.sin_port = htons(PORT);
 
     if (bind(srvfd, (struct sockaddr*)&srvaddr, sizeof(srvaddr)) < 0) {
-        printf("할당 실패\n");
         exit(1);
     }
     printf("UDP 서버 시작, 포트 %d에서 대기 중...\n", PORT);

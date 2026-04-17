@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
     }
 
     int sendrate = atoi(argv[1]);
-    
+
     if (sendrate <= 0) {
         exit(1);
     }
@@ -29,7 +29,6 @@ int main(int argc, char *argv[]) {
 
     skfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (skfd < 0) {
-        printf("socket 생성 실패\n");
         exit(1);
     }
 
@@ -54,7 +53,6 @@ int main(int argc, char *argv[]) {
             int sent = sendto(skfd, buff, chunk, 0,
                                     (struct sockaddr*)&srvaddr, sizeof(srvaddr));
             if (sent < 0) {
-                printf("sendto 실패 (sec=%d)\n", sec);
                 break;
             }
             total += sent;

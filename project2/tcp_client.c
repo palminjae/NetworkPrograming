@@ -79,14 +79,14 @@ int main(int argc, char *argv[]) {
     }
 
     clock_gettime(CLOCK_MONOTONIC, &now);
-    double elapsed = (now.tv_sec  - start.tv_sec)
+    double elapsedtime = (now.tv_sec  - start.tv_sec)
                    + (now.tv_nsec - start.tv_nsec) / 1e9;
-    double tput = total / elapsed;
+    double tput = total / elapsedtime;
 
     printf("\n===== TCP 전송 결과 (클라이언트 기준) =====\n");
     printf("전송속도 설정   : %d bytes/s\n", sendrate);
     printf("총 전송 바이트  : %lld bytes\n", total);
-    printf("경과 시간        : %.3f 초\n", elapsed);
+    printf("경과 시간        : %.3f 초\n", elapsedtime);
     printf("Throughput (TX)  : %.2f bytes/s\n", tput);
 
     close(skfd);
