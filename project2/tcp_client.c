@@ -47,7 +47,7 @@ int main(int argc, char *argv[]) {
     printf("연결성공 전송속도: %d bytes/s, 지속시간: %d초\n",
            sendrate, DURATION);
 
-    long long totalsent = 0;
+    long long total = 0;
     struct timespec start, now, loopstart, loopend;
 
     clock_gettime(CLOCK_MONOTONIC, &start);
@@ -59,36 +59,36 @@ int main(int argc, char *argv[]) {
         int remaining = sendrate;
         while (remaining > 0) {
             int chunk = (remaining < BUFSIZE) ? remaining : BUFSIZE;
-            int bytes_sent = send(skfd, buff, chunk, 0);
-            if (bytes_sent < 0) {
+            int sent = send(skfd, buff, chunk, 0);
+            if (sent < 0) {
                 printf("전송 실패 (sec=%d)\n", sec);
                 goto done;
             }
-            totalsent += bytes_sent;
-            remaining  -= bytes_sent;
+            total += sent;
+            remaining  -= sent;
         }
 
         clock_gettime(CLOCK_MONOTONIC, &loopend); // nanosleep으로 1초 맞추기
-        long elapsedns = (loopend.tv_sec  - loopstart.tv_sec)  * 1000000000LL
+        long elapsedtime = (loopend.tv_sec  - loopstart.tv_sec)  * 1000000000LL
                        + (loopend.tv_nsec - loopstart.tv_nsec);
-        long sleepns = 1000000000LL - elapsedns;
+        long sleepns = 1000000000LL - elapsedtime;
         if (sleepns > 0) {
             struct timespec ts = { .tv_sec = 0, .tv_nsec = sleepns };
             nanosleep(&ts, NULL);
         }
 
-        printf("[%2d초] 누적 전송: %lld bytes\n", sec + 1, totalsent);
+        printf("[%2d초] 누적 전송: %lld bytes\n", sec + 1, total);
     }
 
 done:
     clock_gettime(CLOCK_MONOTONIC, &now);
     double elapsed = (now.tv_sec  - start.tv_sec)
                    + (now.tv_nsec - start.tv_nsec) / 1e9;
-    double tput = totalsent / elapsed;
+    double tput = total / elapsed;
 
     printf("\n===== TCP 전송 결과 (클라이언트 기준) =====\n");
     printf("전송속도 설정   : %d bytes/s\n", sendrate);
-    printf("총 전송 바이트  : %lld bytes\n", totalsent);
+    printf("총 전송 바이트  : %lld bytes\n", total);
     printf("경과 시간        : %.3f 초\n", elapsed);
     printf("Throughput (TX)  : %.2f bytes/s\n", tput);
 

@@ -46,33 +46,33 @@ int main() {
     }
     printf("클라이언트 연결됨: %s\n", inet_ntoa(cliaddr.sin_addr));
 
-    long long totalbytes = 0;
-    int bytes_received;
+    long long total = 0;
+    int received;
     struct timespec start, now;
     clock_gettime(CLOCK_MONOTONIC, &start); // 첫 수신을 기점으로 시간 측정을 시작
 
-    while ((bytes_received = recv(clifd, buff, BUFSIZE, 0)) > 0) {
-        totalbytes += bytes_received;
+    while ((received = recv(clifd, buff, BUFSIZE, 0)) > 0) {
+        total += received;
 
         clock_gettime(CLOCK_MONOTONIC, &now);
-        double elapsed = (now.tv_sec - start.tv_sec)
-                       + (now.tv_nsec - start.tv_nsec) / 1e9;
+        double elapsedtime = (now.tv_sec - start.tv_sec)
+                       + (now.tv_nsec - start.tv_nsec) / 1000000000.0;
 
         printf("[%.2f초] 수신: %d bytes | 누적: %lld bytes\n",
-               elapsed, bytes_received, totalbytes);
+               elapsedtime, received, total);
 
         memset(buff, 0, BUFSIZE);
     }
 
     clock_gettime(CLOCK_MONOTONIC, &now);// 쓰루풋 계산 &출력
-    double elapsed = (now.tv_sec - start.tv_sec)
-                   + (now.tv_nsec - start.tv_nsec) / 1e9;
-    double tputBps  = totalbytes / elapsed;
+    double elapsedtime = (now.tv_sec - start.tv_sec)
+                   + (now.tv_nsec - start.tv_nsec) / 1000000000.0;
+    double tputBps  = total / elapsedtime;
     double tputkBps = tputBps / 1000.0;
 
     printf("\n===== TCP Throughput 측정 결과 (서버 기준) =====\n");
-    printf("총 수신 바이트  : %lld bytes\n", totalbytes);
-    printf("경과 시간        : %.3f 초\n", elapsed);
+    printf("총 수신 바이트  : %lld bytes\n", total);
+    printf("경과 시간        : %.3f 초\n", elapsedtime);
     printf("Throughput (RX)  : %.2f Bytes/s (%.2f kBytes/s)\n", tputBps, tputkBps);
 
     close(clifd);

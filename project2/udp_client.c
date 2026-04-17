@@ -42,7 +42,7 @@ int main(int argc, char *argv[]) {
 
     printf("UDP 전송 시작! 전송속도: %d bytes/s, 지속시간: %d초\n", sendrate, DURATION);
 
-    long long totalsent = 0;
+    long long total = 0;
     struct timespec start, now, loopstart, loopend;
 
     clock_gettime(CLOCK_MONOTONIC, &start);
@@ -53,14 +53,14 @@ int main(int argc, char *argv[]) {
         int remaining = sendrate;
         while (remaining > 0) {
             int chunk = (remaining < BUFSIZE) ? remaining : BUFSIZE;
-            int bytes_sent = sendto(skfd, buff, chunk, 0,
+            int sent = sendto(skfd, buff, chunk, 0,
                                     (struct sockaddr*)&srvaddr, sizeof(srvaddr));
-            if (bytes_sent < 0) {
+            if (sent < 0) {
                 printf("sendto 실패 (sec=%d)\n", sec);
                 break;
             }
-            totalsent += bytes_sent;
-            remaining -= bytes_sent;
+            total += sent;
+            remaining -= sent;
         }
 
         clock_gettime(CLOCK_MONOTONIC, &loopend); // 1초에 맞춰 nanosleep으로 속도 제어
@@ -72,22 +72,22 @@ int main(int argc, char *argv[]) {
             nanosleep(&ts, NULL);
         }
 
-        printf("[%2d초] 누적 전송: %lld bytes\n", sec + 1, totalsent);
+        printf("[%2d초] 누적 전송: %lld bytes\n", sec + 1, total);
     }
 
     sendto(skfd, "END", 3, 0, (struct sockaddr*)&srvaddr, sizeof(srvaddr)); // udp는 연결이 없으므로 sendto로 종료 신호 전송
     printf("종료 신호 전송 완료\n");
 
     clock_gettime(CLOCK_MONOTONIC, &now);
-    double elapsed = (now.tv_sec  - start.tv_sec)
+    double elapsedtime = (now.tv_sec  - start.tv_sec)
                    + (now.tv_nsec - start.tv_nsec) / 1e9;
-    double tputBps  = totalsent / elapsed;
+    double tputBps  = total / elapsedtime;
     double tputkBps = tputBps / 1000.0;
 
     printf("\n===== UDP 전송 결과 (클라이언트 기준) =====\n");
     printf("전송속도 설정   : %d Bytes/s\n", sendrate);
-    printf("총 전송 바이트  : %lld bytes\n", totalsent);
-    printf("경과 시간        : %.3f 초\n", elapsed);
+    printf("총 전송 바이트  : %lld bytes\n", total);
+    printf("경과 시간        : %.3f 초\n", elapsedtime);
     printf("Throughput (TX)  : %.2f Bytes/s (%.2f kBytes/s)\n", tputBps, tputkBps);
     close(skfd);
     return 0;

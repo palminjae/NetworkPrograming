@@ -33,12 +33,12 @@ int main() {
     }
     printf("UDP 서버 시작, 포트 %d에서 대기 중...\n", PORT);
 
-    long long totalbytes = 0;
-    int bytes_received;
+    long long total = 0;
+    int received;
     struct timespec start, end;
     int started = 0;
 
-    while ((bytes_received = recvfrom(srvfd, buff, BUFSIZE, 0,
+    while ((received = recvfrom(srvfd, buff, BUFSIZE, 0,
                                   (struct sockaddr*)&cliaddr, &clilen)) > 0) {
 
     if (!started) { // 첫 수신을 기점으로 시간 측정을 시작
@@ -47,33 +47,33 @@ int main() {
         started = 1;
     }
 
-    if (bytes_received == 3 && strncmp(buff, "END", 3) == 0) { // 종료 신호 받기 tcp에는 있지만 udp에는 없으므로 recvfrom으로 종료 신호 받도록
+    if (received == 3 && strncmp(buff, "END", 3) == 0) { // 종료 신호 받기 tcp에는 있지만 udp에는 없으므로 recvfrom으로 종료 신호 받도록
         clock_gettime(CLOCK_MONOTONIC, &end); 
         printf("종료 신호 수신 → 전송 종료\n");
         break;
     }
 
-    totalbytes += bytes_received;
+    total += received;
     clock_gettime(CLOCK_MONOTONIC, &end);
 
-    double elapsed = (end.tv_sec - start.tv_sec)
-                   + (end.tv_nsec - start.tv_nsec) / 1e9;
+    double elapsedtime = (end.tv_sec - start.tv_sec)
+                   + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
     printf("[%.2f초] 수신: %d bytes | 누적: %lld bytes\n",
-           elapsed, bytes_received, totalbytes);
+           elapsedtime, received, total);
     memset(buff, 0, BUFSIZE);
 }
 
     if (!started) {
         printf("수신된 데이터가 없습니다.\n");
     } else {
-        double elapsed = (end.tv_sec - start.tv_sec)
-                       + (end.tv_nsec - start.tv_nsec) / 1e9;
-        double tputBps  = totalbytes / elapsed;
+        double elapsedtime = (end.tv_sec - start.tv_sec)
+                       + (end.tv_nsec - start.tv_nsec) / 1000000000.0;
+        double tputBps  = total / elapsedtime;
         double tputkBps = tputBps / 1000.0;
 
         printf("\n===== UDP Throughput 측정 결과 (서버 기준) =====\n");
-        printf("총 수신 바이트  : %lld bytes\n", totalbytes);
-        printf("경과 시간        : %.3f 초\n", elapsed);
+        printf("총 수신 바이트  : %lld bytes\n", total);
+        printf("경과 시간        : %.3f 초\n", elapsedtime);
         printf("Throughput (RX)  : %.2f Bytes/s (%.2f kBytes/s)\n", tputBps, tputkBps);
     }
 
